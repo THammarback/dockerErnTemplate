@@ -6,7 +6,7 @@ function App() {
   .then(data => console.log(data))
   .catch(err => console.error(err))
   return (
-    <h1>AHS</h1>
+    <h1>Hello world</h1>
   );
 }
 
