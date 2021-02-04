@@ -1,0 +1,55 @@
+version: '3.7'
+networks:
+  eseknetwork:
+    driver: bridge
+services:
+  client:
+    build: ./client
+    restart: always
+    stdin_open: true
+    working_dir: /client/src/app
+    volumes:
+      - ./client:/client/src/app
+    links:
+      - server
+    networks:
+      - eseknetwork
+  server:
+    build: ./server
+    restart: always
+    environment:
+      WAIT_HOSTS: mysqldb:3306
+    volumes:
+      - ./server:/server
+      - /server/node_modules
+    depends_on:
+      - mysqldb
+    networks:
+      - eseknetwork
+  mysqldb:
+    image: mysql
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: mysqldb
+    environment:
+      MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_DATABASE: 'testdb'
+      MYSQL_HOST: 'mysqldb'
+    volumes:
+      - ./data-node:/data/db
+    networks:
+      - eseknetwork
+    ports:
+      - 3306:3306
+  nginx:
+    image: nginx:1.19.0
+    container_name: nginx
+    networks:
+      - eseknetwork
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+    links:
+      - server
+      - client
